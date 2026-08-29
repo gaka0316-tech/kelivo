@@ -1,3 +1,4 @@
+import "../../../shared/widgets/days_together_widget.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform;
@@ -2092,6 +2093,7 @@ class _SideDrawerState extends State<SideDrawer> with TickerProviderStateMixin {
                 }(),
               ),
 
+              const DaysTogetherWidget(),
               if (widget.showBottomBar && (!widget.embedded || !_isDesktop))
                 Container(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),

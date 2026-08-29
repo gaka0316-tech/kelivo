@@ -7322,11 +7322,23 @@ abstract class AppLocalizations {
   /// **'Don\'t collapse assistant list when closing sidebar'**
   String get displaySettingsPageKeepAssistantListExpandedOnSidebarCloseTitle;
 
+  /// No description provided for @displaySettingsPageFitContentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit Content Bubble Width'**
+  String get displaySettingsPageFitContentTitle;
+
   /// No description provided for @displaySettingsPageShowUpdatesTitle.
   ///
   /// In en, this message translates to:
   /// **'Show Updates'**
   String get displaySettingsPageShowUpdatesTitle;
+
+  /// No description provided for @displaySettingsPageKeepScreenOnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Screen On During Generation'**
+  String get displaySettingsPageKeepScreenOnTitle;
 
   /// No description provided for @displaySettingsPageShowUpdatesSubtitle.
   ///

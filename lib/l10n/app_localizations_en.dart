@@ -3936,7 +3936,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Don\'t collapse assistant list when closing sidebar';
 
   @override
+  String get displaySettingsPageFitContentTitle => 'Fit Content Bubble Width';
+
+  @override
   String get displaySettingsPageShowUpdatesTitle => 'Show Updates';
+
+  @override
+  String get displaySettingsPageKeepScreenOnTitle =>
+      'Keep Screen On During Generation';
 
   @override
   String get displaySettingsPageShowUpdatesSubtitle =>

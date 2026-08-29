@@ -2175,6 +2175,26 @@ class BehaviorStartupSettingsPage extends StatelessWidget {
                     context.read<SettingsProvider>().setShowAppUpdates(v),
               ),
               _iosDivider(context),
+              _iosSwitchRow(
+                context,
+                icon: Lucide.MessageSquare,
+                label: l10n.displaySettingsPageFitContentTitle,
+                value: sp.assistantBubbleFitContent,
+                onChanged: (v) =>
+                    context.read<SettingsProvider>().setAssistantBubbleFitContent(v),
+              ),
+              _iosDivider(context),
+              if (Platform.isIOS || Platform.isAndroid)
+                _iosSwitchRow(
+                  context,
+                  icon: Lucide.Sun,
+                  label: l10n.displaySettingsPageKeepScreenOnTitle,
+                  value: sp.keepScreenOnDuringGeneration,
+                  onChanged: (v) => context
+                      .read<SettingsProvider>()
+                      .setKeepScreenOnDuringGeneration(v),
+                ),
+              _iosDivider(context),
               _iosNavRow(
                 context,
                 icon: Lucide.ChevronRight,

@@ -36,6 +36,7 @@ import '../../../core/providers/model_provider.dart';
 import '../../../core/models/assistant_regex.dart';
 import '../../../shared/widgets/ios_checkbox.dart';
 import '../../../shared/widgets/ios_tactile.dart';
+import '../../../shared/widgets/thinking_sheen.dart';
 import '../../../desktop/desktop_context_menu.dart';
 import '../../../desktop/menu_anchor.dart';
 import '../../../shared/widgets/emoji_text.dart';
@@ -1913,13 +1914,23 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
     );
   }
 
+  /// Assistant blocks span the row by default. With the fit-content option
+  /// on, [Align] hands the bubble loose constraints so it hugs its text.
+  Widget _assistantBlockWidth(BuildContext context, {required Widget child}) {
+    final fitContent = context.select<SettingsProvider, bool>(
+      (s) => s.assistantBubbleFitContent,
+    );
+    if (!fitContent) return SizedBox(width: double.infinity, child: child);
+    return Align(alignment: Alignment.centerLeft, child: child);
+  }
+
   Widget _buildAssistantTextBlock(
     BuildContext context,
     String visualContent,
     SettingsProvider settings,
   ) {
-    return SizedBox(
-      width: double.infinity,
+    return _assistantBlockWidth(
+      context,
       child: _buildAssistantBubbleContainer(
         context: context,
         child: _buildAssistantTextContent(context, visualContent, settings),
@@ -2237,12 +2248,13 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
                 widget.message.isStreaming &&
                 visualContent.isEmpty) {
               return <Widget>[
-                SizedBox(
-                  width: double.infinity,
+                _assistantBlockWidth(
+                  context,
                   child: _buildAssistantBubbleContainer(
                     context: context,
                     child: Align(
                       alignment: Alignment.centerLeft,
+                      widthFactor: 1,
                       child: Semantics(
                         label: l10n.chatMessageWidgetThinking,
                         child: widget.hideStreamingIndicator
@@ -3787,7 +3799,7 @@ class _ChainOfThoughtReasoningStepState
     final display = _sanitize(widget.step.text);
     final label = Row(
       children: [
-        _Shimmer(
+        ThinkingSheen(
           enabled: widget.step.loading,
           child: Text(
             l10n.chatMessageWidgetDeepThinking,
@@ -3802,7 +3814,7 @@ class _ChainOfThoughtReasoningStepState
           const SizedBox(width: 6),
           ValueListenableBuilder<int>(
             valueListenable: _elapsedTick,
-            builder: (context, _, __) => _Shimmer(
+            builder: (context, _, __) => ThinkingSheen(
               enabled: widget.step.loading,
               child: Text(
                 _elapsed(),
@@ -3818,7 +3830,7 @@ class _ChainOfThoughtReasoningStepState
       width: 18,
       height: 18,
       child: Center(
-        child: _Shimmer(
+        child: ThinkingSheen(
           enabled: widget.step.loading,
           child: ReasoningIcons.thinkingCardIcon(size: 18, color: fg.strong),
         ),
@@ -4047,7 +4059,7 @@ class _ChainOfThoughtToolStepState extends State<_ChainOfThoughtToolStep> {
       widget.part.arguments,
       isResult: !widget.part.loading && !isPendingApproval,
     );
-    final label = _Shimmer(
+    final label = ThinkingSheen(
       enabled: widget.part.loading && !_isAskUser,
       child: Text(
         title,
@@ -5965,7 +5977,7 @@ class _ReasoningSectionState extends State<_ReasoningSection>
           children: [
             ReasoningIcons.thinkingCardIcon(size: 18, color: fg.strong),
             const SizedBox(width: 8),
-            _Shimmer(
+            ThinkingSheen(
               enabled: loading,
               child: Text(
                 l10n.chatMessageWidgetDeepThinking,
@@ -5980,7 +5992,7 @@ class _ReasoningSectionState extends State<_ReasoningSection>
             if (widget.startAt != null)
               ValueListenableBuilder<int>(
                 valueListenable: _elapsedTick,
-                builder: (context, _, __) => _Shimmer(
+                builder: (context, _, __) => ThinkingSheen(
                   enabled: loading,
                   child: Text(
                     _elapsed(),
@@ -6117,80 +6129,6 @@ class _ReasoningSectionState extends State<_ReasoningSection>
           ),
         ),
       ),
-    );
-  }
-}
-
-// Lightweight shimmer effect without external dependency
-class _Shimmer extends StatefulWidget {
-  final Widget child;
-  final bool enabled;
-  const _Shimmer({required this.child, this.enabled = false});
-
-  @override
-  State<_Shimmer> createState() => _ShimmerState();
-}
-
-class _ShimmerState extends State<_Shimmer> with TickerProviderStateMixin {
-  late AnimationController _c;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-    if (widget.enabled) _c.repeat();
-  }
-
-  @override
-  void didUpdateWidget(covariant _Shimmer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.enabled && !_c.isAnimating) _c.repeat();
-    if (!widget.enabled && _c.isAnimating) _c.stop();
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.enabled) return widget.child;
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, child) {
-        final t = _c.value; // 0..1
-        return ShaderMask(
-          shaderCallback: (rect) {
-            final width = rect.width;
-            final gradientWidth = width * 0.4;
-            final dx = (width + gradientWidth) * t - gradientWidth;
-            final shaderRect = Rect.fromLTWH(
-              -dx,
-              0,
-              width + gradientWidth * 2,
-              rect.height,
-            );
-            return LinearGradient(
-              colors: [
-                Colors.white.withValues(alpha: 0.0),
-                Colors.white.withValues(alpha: 0.35),
-                Colors.white.withValues(alpha: 0.0),
-              ],
-              stops: const [0.0, 0.5, 1.0],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ).createShader(shaderRect);
-          },
-          blendMode: BlendMode.srcATop,
-          child: child,
-        );
-      },
-      child: widget.child,
     );
   }
 }

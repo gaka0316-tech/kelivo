@@ -3785,7 +3785,13 @@ class AppLocalizationsZh extends AppLocalizations {
       '关闭侧边栏时不折叠助手列表';
 
   @override
+  String get displaySettingsPageFitContentTitle => '气泡自适应宽度';
+
+  @override
   String get displaySettingsPageShowUpdatesTitle => '显示更新';
+
+  @override
+  String get displaySettingsPageKeepScreenOnTitle => '生成时保持屏幕常亮';
 
   @override
   String get displaySettingsPageShowUpdatesSubtitle => '显示应用更新通知';
@@ -9103,7 +9109,13 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
       '关闭侧边栏时不折叠助手列表';
 
   @override
+  String get displaySettingsPageFitContentTitle => '气泡自适应宽度';
+
+  @override
   String get displaySettingsPageShowUpdatesTitle => '显示更新';
+
+  @override
+  String get displaySettingsPageKeepScreenOnTitle => '生成时保持屏幕常亮';
 
   @override
   String get displaySettingsPageShowUpdatesSubtitle => '显示应用更新通知';
@@ -14419,7 +14431,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '關閉側邊欄時不折疊助手列表';
 
   @override
+  String get displaySettingsPageFitContentTitle => '氣泡自適應寬度';
+
+  @override
   String get displaySettingsPageShowUpdatesTitle => '顯示更新';
+
+  @override
+  String get displaySettingsPageKeepScreenOnTitle => '生成時保持螢幕常亮';
 
   @override
   String get displaySettingsPageShowUpdatesSubtitle => '顯示應用程式更新通知';
