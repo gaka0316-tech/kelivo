@@ -24,6 +24,12 @@ class _LocalToolsTab extends StatelessWidget {
     final calculateEnabled = assistant.localToolIds.contains(
       LocalToolNames.calculate,
     );
+    final calendarQueryEnabled = assistant.localToolIds.contains(
+      LocalToolNames.calendarQuery,
+    );
+    final calendarCreateEnabled = assistant.localToolIds.contains(
+      LocalToolNames.calendarCreate,
+    );
 
     Future<void> updateTool(String toolId, bool value) {
       final ids = assistant.localToolIds.toSet();
@@ -35,6 +41,23 @@ class _LocalToolsTab extends StatelessWidget {
       return context.read<AssistantProvider>().updateAssistant(
         assistant.copyWith(localToolIds: ids.toList(growable: false)),
       );
+    }
+
+    Future<void> toggleTool(String toolId, bool value) async {
+      if (value &&
+          (toolId == LocalToolNames.calendarQuery ||
+              toolId == LocalToolNames.calendarCreate) &&
+          DeviceLocalTools.calendarSupported) {
+        final granted = await DeviceLocalTools.hasCalendarPermission();
+        if (!granted) {
+          final requested = await DeviceLocalTools.requestCalendarPermission();
+          if (!requested) {
+            // Do not enable until the user grants calendar access.
+            return;
+          }
+        }
+      }
+      await updateTool(toolId, value);
     }
 
     return ListView(
@@ -82,6 +105,26 @@ class _LocalToolsTab extends StatelessWidget {
               enabled: calculateEnabled,
               onChanged: (value) => updateTool(LocalToolNames.calculate, value),
             ),
+            if (DeviceLocalTools.calendarSupported) ...[
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.Calendar,
+                title: l10n.assistantEditLocalToolCalendarQueryTitle,
+                subtitle: l10n.assistantEditLocalToolCalendarQuerySubtitle,
+                enabled: calendarQueryEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.calendarQuery, value),
+              ),
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.CalendarPlus,
+                title: l10n.assistantEditLocalToolCalendarCreateTitle,
+                subtitle: l10n.assistantEditLocalToolCalendarCreateSubtitle,
+                enabled: calendarCreateEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.calendarCreate, value),
+              ),
+            ],
           ],
         ),
       ],

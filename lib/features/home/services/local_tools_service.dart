@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:math_expressions/math_expressions.dart';
 
@@ -15,6 +16,51 @@ class LocalToolNames {
   static const String textToSpeech = 'text_to_speech';
   static const String askUser = 'ask_user_input_v0';
   static const String calculate = 'calculate';
+  static const String calendarQuery = 'calendar_query';
+  static const String calendarCreate = 'calendar_create';
+}
+
+/// Platform availability of the device-backed local tools (implemented over
+/// a MethodChannel in the iOS host app).
+class DeviceLocalTools {
+  const DeviceLocalTools._();
+
+  static const MethodChannel _channel = MethodChannel('app.device_tools');
+
+  static bool get calendarSupported =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
+  /// Returns true when calendar full access is already granted.
+  static Future<bool> hasCalendarPermission() async {
+    if (!calendarSupported) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>('hasCalendarPermission');
+      return result == true;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  /// Requests calendar full access via the native channel.
+  /// Returns true only when granted. On iOS, permanently denied / restricted
+  /// states open the app Settings page.
+  static Future<bool> requestCalendarPermission() async {
+    if (!calendarSupported) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>(
+        'requestCalendarPermission',
+      );
+      return result == true;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
 }
 
 class LocalToolsService {
@@ -155,6 +201,110 @@ class LocalToolsService {
         },
       });
     }
+    if (DeviceLocalTools.calendarSupported &&
+        assistant.localToolIds.contains(LocalToolNames.calendarQuery)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.calendarQuery,
+          'description':
+              "Query calendar events on the user's device within a time range. "
+              "Specify a custom interval with 'begin'/'end', or use the 'range' preset (today/week/month). "
+              'Returns a list of events with title, description, location, start/end times, and calendar info. '
+              '${_deviceTimezoneHint()} '
+              "Requires the 'Calendar' permission; if it is not granted, an error is returned.",
+          'parameters': {
+            'type': 'object',
+            'properties': {
+              'begin': {
+                'type': 'string',
+                'description':
+                    "Start time (inclusive). Accepts an ISO-8601 date 'yyyy-MM-dd', a local "
+                    "date-time 'yyyy-MM-ddTHH:mm:ss', an offset date-time, or epoch milliseconds. "
+                    "When provided, 'range' is ignored.",
+              },
+              'end': {
+                'type': 'string',
+                'description': "End time (exclusive), same formats as 'begin'.",
+              },
+              'range': {
+                'type': 'string',
+                'enum': ['today', 'week', 'month'],
+                'description':
+                    "Convenience preset, used only when 'begin' is omitted: today, week, or month. Default today.",
+              },
+              'query': {
+                'type': 'string',
+                'description':
+                    'Optional keyword to filter events by title (case-insensitive substring match).',
+              },
+              'limit': {
+                'type': 'integer',
+                'description':
+                    'Maximum number of events to return. Default 20.',
+              },
+            },
+          },
+        },
+      });
+    }
+    if (DeviceLocalTools.calendarSupported &&
+        assistant.localToolIds.contains(LocalToolNames.calendarCreate)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.calendarCreate,
+          'description':
+              "Create a new calendar event on the user's device. "
+              'Requires title and start time at minimum. End time defaults to 1 hour after start. '
+              "Use 'reminders' to attach notification alerts ahead of the event. "
+              'The user will be asked to confirm before the event is created. '
+              '${_deviceTimezoneHint()} '
+              "Requires the 'Calendar' permission; if it is not granted, an error is returned.",
+          'parameters': {
+            'type': 'object',
+            'properties': {
+              'title': {'type': 'string', 'description': 'Event title.'},
+              'description': {
+                'type': 'string',
+                'description': 'Event description or notes.',
+              },
+              'location': {'type': 'string', 'description': 'Event location.'},
+              'start': {
+                'type': 'string',
+                'description':
+                    "Start time. Accepts an ISO-8601 date 'yyyy-MM-dd', a local "
+                    "date-time 'yyyy-MM-ddTHH:mm:ss', an offset date-time, or epoch milliseconds.",
+              },
+              'end': {
+                'type': 'string',
+                'description':
+                    "End time, same formats as 'start'. Defaults to 1 hour after start.",
+              },
+              'all_day': {
+                'type': 'boolean',
+                'description':
+                    'Whether this is an all-day event. Default false.',
+              },
+              'reminders': {
+                'type': 'array',
+                'items': {'type': 'integer'},
+                'description':
+                    'Optional notification reminders, as minutes before the event start '
+                    '(e.g. [10] for 10 minutes before, [0] for exactly at the start time, '
+                    '[30, 1440] for 30 minutes and 1 day before). For all-day events the '
+                    'offset counts back from the start of the day. No reminder is attached '
+                    'unless you pass this, so include one whenever the user expects to be '
+                    'notified. At most 5 reminders; values are clamped to 0-40320 minutes '
+                    '(4 weeks) and de-duplicated, and the result reports what was actually '
+                    'saved.',
+              },
+            },
+            'required': ['title', 'start'],
+          },
+        },
+      });
+    }
     return tools;
   }
 
@@ -179,7 +329,58 @@ class LocalToolsService {
     if (name == LocalToolNames.calculate) {
       return _handleCalculateTool(args);
     }
+    if (name == LocalToolNames.calendarQuery &&
+        DeviceLocalTools.calendarSupported) {
+      return _invokeDeviceTool('queryCalendar', args);
+    }
+    if (name == LocalToolNames.calendarCreate &&
+        DeviceLocalTools.calendarSupported) {
+      return _invokeDeviceTool('createCalendarEvent', args);
+    }
     return null;
+  }
+
+  static String _deviceTimezoneHint() {
+    final now = DateTime.now();
+    final offset = now.timeZoneOffset;
+    final sign = offset.isNegative ? '-' : '+';
+    final abs = offset.abs();
+    final hh = abs.inHours.toString().padLeft(2, '0');
+    final mm = (abs.inMinutes % 60).toString().padLeft(2, '0');
+    return "The device timezone is '${now.timeZoneName}' (UTC offset $sign$hh:$mm); "
+        'times without an explicit offset are interpreted in this timezone.';
+  }
+
+  /// Invokes a native device tool over the MethodChannel. The native side
+  /// returns a JSON string payload (including structured error payloads that
+  /// the model can act on, e.g. missing permissions).
+  static Future<String> _invokeDeviceTool(
+    String method,
+    Map<String, dynamic> args,
+  ) async {
+    try {
+      final result = await DeviceLocalTools._channel.invokeMethod<String>(
+        method,
+        jsonEncode(args),
+      );
+      if (result == null || result.isEmpty) {
+        return jsonEncode({
+          'error': 'no_result',
+          'message': 'The device tool returned no result.',
+        });
+      }
+      return result;
+    } on MissingPluginException {
+      return jsonEncode({
+        'error': 'unsupported_platform',
+        'message': 'This tool is not available on the current platform.',
+      });
+    } on PlatformException catch (e) {
+      return jsonEncode({
+        'error': e.code,
+        'message': e.message ?? 'The device tool failed.',
+      });
+    }
   }
 
   static Future<String> _handleClipboardTool(Map<String, dynamic> args) async {

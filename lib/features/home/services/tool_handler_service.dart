@@ -364,6 +364,28 @@ class ToolHandlerService {
           return memoryResult;
         }
 
+        // Creating calendar events modifies user data, so it always requires
+        // explicit user approval before the local tool runs.
+        if (name == LocalToolNames.calendarCreate &&
+            assistant != null &&
+            assistant.localToolIds.contains(LocalToolNames.calendarCreate) &&
+            approvalService != null) {
+          final calToolCallId =
+              '${name}_${DateTime.now().microsecondsSinceEpoch}';
+          final approval = await approvalService.requestApproval(
+            toolCallId: calToolCallId,
+            toolName: name,
+            arguments: args,
+          );
+          if (!approval.approved) {
+            return _toolError(
+              error: 'approval_denied',
+              message: approval.denyReason ?? 'User denied the tool call',
+              tool: name,
+            );
+          }
+        }
+
         // Local tools
         final localResult = await LocalToolsService.tryHandleToolCall(
           name,
