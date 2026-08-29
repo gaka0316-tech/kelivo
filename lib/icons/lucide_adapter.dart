@@ -150,6 +150,10 @@ class Lucide {
   static const IconData toggleRight = lucide.LucideIcons.toggleRight;
   static const IconData Calendar = lucide.LucideIcons.calendar;
   static const IconData CalendarPlus = lucide.LucideIcons.calendarPlus;
+  static const IconData MapPin = lucide.LucideIcons.mapPin;
+  static const IconData CloudSun = lucide.LucideIcons.cloudSun;
+  static const IconData ListTodo = lucide.LucideIcons.listTodo;
+  static const IconData ListPlus = lucide.LucideIcons.listPlus;
   static const IconData ImageOff = lucide.LucideIcons.imageOff;
   static const IconData RotateCcw = lucide.LucideIcons.rotateCcw;
   static const IconData FlipHorizontal2 = lucide.LucideIcons.flipHorizontal2;

@@ -18,6 +18,20 @@ class LocalToolNames {
   static const String calculate = 'calculate';
   static const String calendarQuery = 'calendar_query';
   static const String calendarCreate = 'calendar_create';
+  static const String currentLocation = 'get_current_location';
+  static const String weather = 'get_weather';
+  static const String healthSummary = 'get_health_summary';
+  static const String remindersQuery = 'reminders_query';
+  static const String remindersCreate = 'reminders_create';
+  static const String remindersComplete = 'reminders_complete';
+
+  /// Local tools that modify user data and therefore always require explicit
+  /// user approval before they run.
+  static const Set<String> requiresUserApproval = {
+    calendarCreate,
+    remindersCreate,
+    remindersComplete,
+  };
 }
 
 /// Platform availability of the device-backed local tools (implemented over
@@ -58,6 +72,102 @@ class DeviceLocalTools {
     } on MissingPluginException {
       return false;
     } on PlatformException {
+      return false;
+    }
+  }
+
+  static bool get iosDeviceToolsSupported =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
+  static bool get locationSupported => iosDeviceToolsSupported;
+  static bool get remindersSupported => iosDeviceToolsSupported;
+
+  static bool _capabilitiesFetched = false;
+  static bool _weatherAvailable = false;
+  static bool _healthAvailable = false;
+
+  static bool get weatherSupported =>
+      iosDeviceToolsSupported && _weatherAvailable;
+  static bool get healthSupported =>
+      iosDeviceToolsSupported && _healthAvailable;
+
+  /// Fetches native capability flags (weather backend, HealthKit) once.
+  static Future<void> prefetchIosCapabilities() async {
+    if (!iosDeviceToolsSupported || _capabilitiesFetched) return;
+    _capabilitiesFetched = true;
+    try {
+      final weather = await _channel.invokeMethod<bool>(
+        'isWeatherKitAvailable',
+      );
+      _weatherAvailable = weather == true;
+    } catch (_) {
+      _weatherAvailable = false;
+    }
+    try {
+      final health = await _channel.invokeMethod<bool>('isHealthDataAvailable');
+      _healthAvailable = health == true;
+    } catch (_) {
+      _healthAvailable = false;
+    }
+  }
+
+  /// Location permission (when-in-use) helpers.
+  static Future<bool> hasLocationPermission() async {
+    if (!locationSupported) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>('hasLocationPermission');
+      return result == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<bool> requestLocationPermission() async {
+    if (!locationSupported) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>(
+        'requestLocationPermission',
+      );
+      return result == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Reminders permission helpers.
+  static Future<bool> hasRemindersPermission() async {
+    if (!remindersSupported) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>(
+        'hasRemindersPermission',
+      );
+      return result == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<bool> requestRemindersPermission() async {
+    if (!remindersSupported) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>(
+        'requestRemindersPermission',
+      );
+      return result == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Health permission helper (returns true when the request sheet completed).
+  static Future<bool> requestHealthPermission() async {
+    if (!iosDeviceToolsSupported) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>(
+        'requestHealthPermission',
+      );
+      return result == true;
+    } catch (_) {
       return false;
     }
   }
@@ -305,6 +415,188 @@ class LocalToolsService {
         },
       });
     }
+if (DeviceLocalTools.locationSupported &&
+        assistant.localToolIds.contains(LocalToolNames.currentLocation)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.currentLocation,
+          'description':
+              "Get the user's current location from the device (one-shot, When In Use). "
+              'Returns latitude, longitude, accuracy in meters, timestamp, and optional '
+              'city/region/country from reverse geocoding. Do not request this unless the '
+              'user asked for their location or it is needed for weather. '
+              "Requires the Location permission; if it is not granted, an error is returned.",
+          'parameters': {'type': 'object', 'properties': <String, dynamic>{}},
+        },
+      });
+    }
+    if (DeviceLocalTools.weatherSupported &&
+        assistant.localToolIds.contains(LocalToolNames.weather)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.weather,
+          'description':
+              'Get current weather, hourly forecast, and daily forecast from Apple Weather. '
+              'Omit coordinates to use the current device location; or pass latitude and '
+              'longitude to query a specific place. '
+              'Returns temperature, apparent temperature, precipitation chance, and forecasts. '
+              'Always mention that weather data is from Apple Weather when presenting results. '
+              '${_deviceTimezoneHint()} '
+              'Requires Location permission when coordinates are omitted.',
+          'parameters': {
+            'type': 'object',
+            'properties': {
+              'latitude': {
+                'type': 'number',
+                'description':
+                    'Latitude in decimal degrees. Required together with longitude '
+                    'when querying a specific place.',
+              },
+              'longitude': {
+                'type': 'number',
+                'description':
+                    'Longitude in decimal degrees. Required together with latitude '
+                    'when querying a specific place.',
+              },
+            },
+          },
+        },
+      });
+    }
+    if (DeviceLocalTools.healthSupported &&
+        assistant.localToolIds.contains(LocalToolNames.healthSummary)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.healthSummary,
+          'description':
+              "Get a privacy-preserving health activity summary from the device: today's "
+              'steps, active energy, walking/running distance, last-night sleep, latest '
+              'heart rate, and recent workouts. Each metric includes its time interval. '
+              'A metric with status "unavailable" means there is no authorized or recorded '
+              'data — never treat unavailable as 0. This tool does not return raw HealthKit '
+              'history. Requires Health access.',
+          'parameters': {'type': 'object', 'properties': <String, dynamic>{}},
+        },
+      });
+    }
+    if (DeviceLocalTools.remindersSupported &&
+        assistant.localToolIds.contains(LocalToolNames.remindersQuery)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.remindersQuery,
+          'description':
+              "Query reminders on the user's device. Filter by date range, completion "
+              'status, and an optional keyword. Reminders without a due date are included '
+              'unless an explicit begin time is provided. '
+              '${_deviceTimezoneHint()} '
+              "Requires the Reminders permission; if it is not granted, an error is returned.",
+          'parameters': {
+            'type': 'object',
+            'properties': {
+              'begin': {
+                'type': 'string',
+                'description':
+                    "Start time (inclusive). Accepts an ISO-8601 date 'yyyy-MM-dd', a local "
+                    "date-time 'yyyy-MM-ddTHH:mm:ss', an offset date-time, or epoch milliseconds. "
+                    "When provided, 'range' is ignored.",
+              },
+              'end': {
+                'type': 'string',
+                'description': "End time (exclusive), same formats as 'begin'.",
+              },
+              'range': {
+                'type': 'string',
+                'enum': ['today', 'week', 'month'],
+                'description':
+                    "Convenience preset, used only when 'begin' is omitted: today, week, or month. Default today.",
+              },
+              'completed': {
+                'type': 'string',
+                'enum': ['all', 'true', 'false'],
+                'description':
+                    'Filter by completion: all, true (completed only), or false (incomplete only). Default all.',
+              },
+              'query': {
+                'type': 'string',
+                'description':
+                    'Optional keyword to filter reminders by title or notes (case-insensitive substring).',
+              },
+              'limit': {
+                'type': 'integer',
+                'description':
+                    'Maximum number of reminders to return. Default 20.',
+              },
+            },
+          },
+        },
+      });
+    }
+    if (DeviceLocalTools.remindersSupported &&
+        assistant.localToolIds.contains(LocalToolNames.remindersCreate)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.remindersCreate,
+          'description':
+              "Create a reminder on the user's device. Requires a title. "
+              'The user will be asked to confirm before the reminder is created. '
+              '${_deviceTimezoneHint()} '
+              "Requires the Reminders permission; if it is not granted, an error is returned.",
+          'parameters': {
+            'type': 'object',
+            'properties': {
+              'title': {'type': 'string', 'description': 'Reminder title.'},
+              'notes': {
+                'type': 'string',
+                'description': 'Optional notes or description.',
+              },
+              'due': {
+                'type': 'string',
+                'description':
+                    "Optional due time. Accepts an ISO-8601 date 'yyyy-MM-dd', a local "
+                    "date-time 'yyyy-MM-ddTHH:mm:ss', an offset date-time, or epoch milliseconds.",
+              },
+              'priority': {
+                'type': 'string',
+                'description':
+                    'Optional priority: none, high, medium, low, or an EventKit integer 0-9 '
+                    '(0 none, 1 high, 5 medium, 9 low).',
+              },
+            },
+            'required': ['title'],
+          },
+        },
+      });
+    }
+    if (DeviceLocalTools.remindersSupported &&
+        assistant.localToolIds.contains(LocalToolNames.remindersComplete)) {
+      tools.add({
+        'type': 'function',
+        'function': {
+          'name': LocalToolNames.remindersComplete,
+          'description':
+              'Mark a reminder as completed. Requires the reminder id returned by '
+              'reminders_query or reminders_create. The user will be asked to confirm '
+              'before the reminder is updated. '
+              "Requires the Reminders permission; if it is not granted, an error is returned.",
+          'parameters': {
+            'type': 'object',
+            'properties': {
+              'id': {
+                'type': 'string',
+                'description':
+                    'Reminder id from reminders_query or reminders_create.',
+              },
+            },
+            'required': ['id'],
+          },
+        },
+      });
+    }
     return tools;
   }
 
@@ -336,6 +628,44 @@ class LocalToolsService {
     if (name == LocalToolNames.calendarCreate &&
         DeviceLocalTools.calendarSupported) {
       return _invokeDeviceTool('createCalendarEvent', args);
+    }
+    if (name == LocalToolNames.currentLocation &&
+        DeviceLocalTools.locationSupported) {
+      return _invokeDeviceTool('getCurrentLocation', args);
+    }
+    if (name == LocalToolNames.weather &&
+        DeviceLocalTools.iosDeviceToolsSupported) {
+      await DeviceLocalTools.prefetchIosCapabilities();
+      if (!DeviceLocalTools.weatherSupported) {
+        return jsonEncode({
+          'error': 'unsupported_os',
+          'message': 'Weather requires iOS 16 or later.',
+        });
+      }
+      return _invokeDeviceTool('getWeather', args);
+    }
+    if (name == LocalToolNames.healthSummary &&
+        DeviceLocalTools.iosDeviceToolsSupported) {
+      await DeviceLocalTools.prefetchIosCapabilities();
+      if (!DeviceLocalTools.healthSupported) {
+        return jsonEncode({
+          'error': 'unsupported_os',
+          'message': 'Health data is not available on this device.',
+        });
+      }
+      return _invokeDeviceTool('getHealthSummary', args);
+    }
+    if (name == LocalToolNames.remindersQuery &&
+        DeviceLocalTools.remindersSupported) {
+      return _invokeDeviceTool('queryReminders', args);
+    }
+    if (name == LocalToolNames.remindersCreate &&
+        DeviceLocalTools.remindersSupported) {
+      return _invokeDeviceTool('createReminder', args);
+    }
+    if (name == LocalToolNames.remindersComplete &&
+        DeviceLocalTools.remindersSupported) {
+      return _invokeDeviceTool('completeReminder', args);
     }
     return null;
   }

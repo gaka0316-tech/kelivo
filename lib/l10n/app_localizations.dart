@@ -8900,6 +8900,78 @@ abstract class AppLocalizations {
   /// **'Create calendar events on this device with your confirmation, requires the calendar permission.'**
   String get assistantEditLocalToolCalendarCreateSubtitle;
 
+  /// No description provided for @assistantEditLocalToolLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location'**
+  String get assistantEditLocalToolLocationTitle;
+
+  /// No description provided for @assistantEditLocalToolLocationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get the device\'s current coordinates, requires the location permission.'**
+  String get assistantEditLocalToolLocationSubtitle;
+
+  /// No description provided for @assistantEditLocalToolWeatherTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get assistantEditLocalToolWeatherTitle;
+
+  /// No description provided for @assistantEditLocalToolWeatherSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get weather and forecast for the current or given coordinates (Open-Meteo).'**
+  String get assistantEditLocalToolWeatherSubtitle;
+
+  /// No description provided for @assistantEditLocalToolHealthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Summary'**
+  String get assistantEditLocalToolHealthTitle;
+
+  /// No description provided for @assistantEditLocalToolHealthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read steps, sleep and other health summaries, requires the health permission.'**
+  String get assistantEditLocalToolHealthSubtitle;
+
+  /// No description provided for @assistantEditLocalToolRemindersQueryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Query Reminders'**
+  String get assistantEditLocalToolRemindersQueryTitle;
+
+  /// No description provided for @assistantEditLocalToolRemindersQuerySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read to-dos from the Reminders app, requires the reminders permission.'**
+  String get assistantEditLocalToolRemindersQuerySubtitle;
+
+  /// No description provided for @assistantEditLocalToolRemindersCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Reminder'**
+  String get assistantEditLocalToolRemindersCreateTitle;
+
+  /// No description provided for @assistantEditLocalToolRemindersCreateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create reminders with your confirmation, requires the reminders permission.'**
+  String get assistantEditLocalToolRemindersCreateSubtitle;
+
+  /// No description provided for @assistantEditLocalToolRemindersCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Reminder'**
+  String get assistantEditLocalToolRemindersCompleteTitle;
+
+  /// No description provided for @assistantEditLocalToolRemindersCompleteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark a reminder as completed with your confirmation.'**
+  String get assistantEditLocalToolRemindersCompleteSubtitle;
+
   /// No description provided for @assistantEditMemorySwitchTitle.
   ///
   /// In en, this message translates to:

@@ -4803,6 +4803,49 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create calendar events on this device with your confirmation, requires the calendar permission.';
 
   @override
+  String get assistantEditLocalToolLocationTitle => 'Current Location';
+
+  @override
+  String get assistantEditLocalToolLocationSubtitle =>
+      'Get the device\'s current coordinates, requires the location permission.';
+
+  @override
+  String get assistantEditLocalToolWeatherTitle => 'Weather';
+
+  @override
+  String get assistantEditLocalToolWeatherSubtitle =>
+      'Get weather and forecast for the current or given coordinates (Open-Meteo).';
+
+  @override
+  String get assistantEditLocalToolHealthTitle => 'Health Summary';
+
+  @override
+  String get assistantEditLocalToolHealthSubtitle =>
+      'Read steps, sleep and other health summaries, requires the health permission.';
+
+  @override
+  String get assistantEditLocalToolRemindersQueryTitle => 'Query Reminders';
+
+  @override
+  String get assistantEditLocalToolRemindersQuerySubtitle =>
+      'Read to-dos from the Reminders app, requires the reminders permission.';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateTitle => 'Create Reminder';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateSubtitle =>
+      'Create reminders with your confirmation, requires the reminders permission.';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteTitle =>
+      'Complete Reminder';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteSubtitle =>
+      'Mark a reminder as completed with your confirmation.';
+
+  @override
   String get assistantEditMemorySwitchTitle => 'Memory';
 
   @override

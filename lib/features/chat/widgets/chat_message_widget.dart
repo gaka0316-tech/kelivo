@@ -130,6 +130,12 @@ IconData? _localToolIconFor(String name, Map<String, dynamic> args) {
     LocalToolNames.calculate => Lucide.Calculator,
     LocalToolNames.calendarQuery => Lucide.Calendar,
     LocalToolNames.calendarCreate => Lucide.CalendarPlus,
+    LocalToolNames.currentLocation => Lucide.MapPin,
+    LocalToolNames.weather => Lucide.CloudSun,
+    LocalToolNames.healthSummary => Lucide.HeartPulse,
+    LocalToolNames.remindersQuery => Lucide.ListTodo,
+    LocalToolNames.remindersCreate => Lucide.ListPlus,
+    LocalToolNames.remindersComplete => Lucide.CheckCircle,
     _ => null,
   };
 }
@@ -155,6 +161,15 @@ String? _localToolTitleFor(
       l10n.assistantEditLocalToolCalendarQueryTitle,
     LocalToolNames.calendarCreate =>
       l10n.assistantEditLocalToolCalendarCreateTitle,
+    LocalToolNames.currentLocation => l10n.assistantEditLocalToolLocationTitle,
+    LocalToolNames.weather => l10n.assistantEditLocalToolWeatherTitle,
+    LocalToolNames.healthSummary => l10n.assistantEditLocalToolHealthTitle,
+    LocalToolNames.remindersQuery =>
+      l10n.assistantEditLocalToolRemindersQueryTitle,
+    LocalToolNames.remindersCreate =>
+      l10n.assistantEditLocalToolRemindersCreateTitle,
+    LocalToolNames.remindersComplete =>
+      l10n.assistantEditLocalToolRemindersCompleteTitle,
     _ => null,
   };
 }

@@ -4610,6 +4610,46 @@ class AppLocalizationsZh extends AppLocalizations {
       '在你确认后于本设备创建日历日程，需要授予日历权限。';
 
   @override
+  String get assistantEditLocalToolLocationTitle => '当前位置';
+
+  @override
+  String get assistantEditLocalToolLocationSubtitle => '获取设备当前位置坐标，需要授予定位权限。';
+
+  @override
+  String get assistantEditLocalToolWeatherTitle => '查询天气';
+
+  @override
+  String get assistantEditLocalToolWeatherSubtitle =>
+      '获取当前位置或指定坐标的天气与预报（Open-Meteo）。';
+
+  @override
+  String get assistantEditLocalToolHealthTitle => '健康摘要';
+
+  @override
+  String get assistantEditLocalToolHealthSubtitle => '读取步数、睡眠等健康数据摘要，需要授予健康权限。';
+
+  @override
+  String get assistantEditLocalToolRemindersQueryTitle => '查询提醒事项';
+
+  @override
+  String get assistantEditLocalToolRemindersQuerySubtitle =>
+      '读取提醒事项App中的待办，需要授予提醒事项权限。';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateTitle => '创建提醒事项';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateSubtitle =>
+      '在你确认后创建提醒事项，需要授予提醒事项权限。';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteTitle => '完成提醒事项';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteSubtitle =>
+      '在你确认后将提醒事项标记为完成。';
+
+  @override
   String get assistantEditMemorySwitchTitle => '记忆';
 
   @override
@@ -9948,6 +9988,46 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
       '在你确认后于本设备创建日历日程，需要授予日历权限。';
 
   @override
+  String get assistantEditLocalToolLocationTitle => '当前位置';
+
+  @override
+  String get assistantEditLocalToolLocationSubtitle => '获取设备当前位置坐标，需要授予定位权限。';
+
+  @override
+  String get assistantEditLocalToolWeatherTitle => '查询天气';
+
+  @override
+  String get assistantEditLocalToolWeatherSubtitle =>
+      '获取当前位置或指定坐标的天气与预报（Open-Meteo）。';
+
+  @override
+  String get assistantEditLocalToolHealthTitle => '健康摘要';
+
+  @override
+  String get assistantEditLocalToolHealthSubtitle => '读取步数、睡眠等健康数据摘要，需要授予健康权限。';
+
+  @override
+  String get assistantEditLocalToolRemindersQueryTitle => '查询提醒事项';
+
+  @override
+  String get assistantEditLocalToolRemindersQuerySubtitle =>
+      '读取提醒事项App中的待办，需要授予提醒事项权限。';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateTitle => '创建提醒事项';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateSubtitle =>
+      '在你确认后创建提醒事项，需要授予提醒事项权限。';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteTitle => '完成提醒事项';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteSubtitle =>
+      '在你确认后将提醒事项标记为完成。';
+
+  @override
   String get assistantEditMemorySwitchTitle => '记忆';
 
   @override
@@ -15284,6 +15364,46 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get assistantEditLocalToolCalendarCreateSubtitle =>
       '在你確認後於本裝置建立日曆行程，需要授予日曆權限。';
+
+  @override
+  String get assistantEditLocalToolLocationTitle => '當前位置';
+
+  @override
+  String get assistantEditLocalToolLocationSubtitle => '獲取裝置當前位置座標，需要授予定位權限。';
+
+  @override
+  String get assistantEditLocalToolWeatherTitle => '查詢天氣';
+
+  @override
+  String get assistantEditLocalToolWeatherSubtitle =>
+      '獲取當前位置或指定座標的天氣與預報（Open-Meteo）。';
+
+  @override
+  String get assistantEditLocalToolHealthTitle => '健康摘要';
+
+  @override
+  String get assistantEditLocalToolHealthSubtitle => '讀取步數、睡眠等健康數據摘要，需要授予健康權限。';
+
+  @override
+  String get assistantEditLocalToolRemindersQueryTitle => '查詢提醒事項';
+
+  @override
+  String get assistantEditLocalToolRemindersQuerySubtitle =>
+      '讀取提醒事項App中的待辦，需要授予提醒事項權限。';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateTitle => '建立提醒事項';
+
+  @override
+  String get assistantEditLocalToolRemindersCreateSubtitle =>
+      '在你確認後建立提醒事項，需要授予提醒事項權限。';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteTitle => '完成提醒事項';
+
+  @override
+  String get assistantEditLocalToolRemindersCompleteSubtitle =>
+      '在你確認後將提醒事項標記為完成。';
 
   @override
   String get assistantEditMemorySwitchTitle => '記憶';

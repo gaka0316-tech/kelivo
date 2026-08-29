@@ -30,6 +30,24 @@ class _LocalToolsTab extends StatelessWidget {
     final calendarCreateEnabled = assistant.localToolIds.contains(
       LocalToolNames.calendarCreate,
     );
+    final locationEnabled = assistant.localToolIds.contains(
+      LocalToolNames.currentLocation,
+    );
+    final weatherEnabled = assistant.localToolIds.contains(
+      LocalToolNames.weather,
+    );
+    final healthEnabled = assistant.localToolIds.contains(
+      LocalToolNames.healthSummary,
+    );
+    final remindersQueryEnabled = assistant.localToolIds.contains(
+      LocalToolNames.remindersQuery,
+    );
+    final remindersCreateEnabled = assistant.localToolIds.contains(
+      LocalToolNames.remindersCreate,
+    );
+    final remindersCompleteEnabled = assistant.localToolIds.contains(
+      LocalToolNames.remindersComplete,
+    );
 
     Future<void> updateTool(String toolId, bool value) {
       final ids = assistant.localToolIds.toSet();
@@ -56,6 +74,39 @@ class _LocalToolsTab extends StatelessWidget {
             return;
           }
         }
+      }
+      if (value &&
+          (toolId == LocalToolNames.currentLocation ||
+              toolId == LocalToolNames.weather) &&
+          DeviceLocalTools.locationSupported) {
+        final granted = await DeviceLocalTools.hasLocationPermission();
+        if (!granted) {
+          final requested = await DeviceLocalTools.requestLocationPermission();
+          if (!requested && toolId == LocalToolNames.currentLocation) {
+            // Weather can still work with explicit coordinates, but the
+            // location tool itself needs the permission.
+            return;
+          }
+        }
+      }
+      if (value &&
+          (toolId == LocalToolNames.remindersQuery ||
+              toolId == LocalToolNames.remindersCreate ||
+              toolId == LocalToolNames.remindersComplete) &&
+          DeviceLocalTools.remindersSupported) {
+        final granted = await DeviceLocalTools.hasRemindersPermission();
+        if (!granted) {
+          final requested = await DeviceLocalTools.requestRemindersPermission();
+          if (!requested) {
+            return;
+          }
+        }
+      }
+      if (value &&
+          toolId == LocalToolNames.healthSummary &&
+          DeviceLocalTools.iosDeviceToolsSupported) {
+        await DeviceLocalTools.prefetchIosCapabilities();
+        await DeviceLocalTools.requestHealthPermission();
       }
       await updateTool(toolId, value);
     }
@@ -123,6 +174,62 @@ class _LocalToolsTab extends StatelessWidget {
                 enabled: calendarCreateEnabled,
                 onChanged: (value) =>
                     toggleTool(LocalToolNames.calendarCreate, value),
+              ),
+            ],
+            if (DeviceLocalTools.iosDeviceToolsSupported) ...[
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.MapPin,
+                title: l10n.assistantEditLocalToolLocationTitle,
+                subtitle: l10n.assistantEditLocalToolLocationSubtitle,
+                enabled: locationEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.currentLocation, value),
+              ),
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.CloudSun,
+                title: l10n.assistantEditLocalToolWeatherTitle,
+                subtitle: l10n.assistantEditLocalToolWeatherSubtitle,
+                enabled: weatherEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.weather, value),
+              ),
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.HeartPulse,
+                title: l10n.assistantEditLocalToolHealthTitle,
+                subtitle: l10n.assistantEditLocalToolHealthSubtitle,
+                enabled: healthEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.healthSummary, value),
+              ),
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.ListTodo,
+                title: l10n.assistantEditLocalToolRemindersQueryTitle,
+                subtitle: l10n.assistantEditLocalToolRemindersQuerySubtitle,
+                enabled: remindersQueryEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.remindersQuery, value),
+              ),
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.ListPlus,
+                title: l10n.assistantEditLocalToolRemindersCreateTitle,
+                subtitle: l10n.assistantEditLocalToolRemindersCreateSubtitle,
+                enabled: remindersCreateEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.remindersCreate, value),
+              ),
+              _iosDivider(context),
+              _LocalToolRow(
+                icon: Lucide.CheckCircle,
+                title: l10n.assistantEditLocalToolRemindersCompleteTitle,
+                subtitle: l10n.assistantEditLocalToolRemindersCompleteSubtitle,
+                enabled: remindersCompleteEnabled,
+                onChanged: (value) =>
+                    toggleTool(LocalToolNames.remindersComplete, value),
               ),
             ],
           ],
